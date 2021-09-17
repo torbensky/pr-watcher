@@ -1,0 +1,23 @@
+{
+    "repository": {
+      "pullRequest": {
+        "title": "just testing a thing",
+        "number": 1234,
+        "state": "OPEN",
+        "mergeable": "MERGEABLE",
+        "reviews": {
+          "nodes": []
+        },
+        "commits": {
+          "nodes": [
+            {
+              "commit": {
+                "abbreviatedOid": "82e8abc",
+                "status": null
+              }
+            }
+          ]
+        }
+      }
+    }
+}

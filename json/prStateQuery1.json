@@ -1,0 +1,32 @@
+{
+    "repository": {
+      "pullRequest": {
+        "title": "just testing a thing",
+        "state": "OPEN",
+        "number": 1234,
+        "mergeable": "MERGEABLE",
+        "reviews": {
+          "nodes": []
+        },
+        "commits": {
+          "nodes": [
+            {
+              "commit": {
+                "abbreviatedOid": "2e1a0c0",
+                "status": {
+                  "contexts": [
+                    {
+                      "context": "continuous-integration/jenkins/branch",
+                      "description": "This commit is being built",
+                      "state": "PENDING",
+                      "id": "cijb"
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+}
