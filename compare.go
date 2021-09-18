@@ -1,81 +1,81 @@
 package prwatcher
 
-import (
-	"fmt"
-	"reflect"
-
-	"github.com/r3labs/diff/v2"
-)
-
 type ChangeType uint
 
 const (
-	NONE = iota
-	REPO_STATUS
-	REVIEW_CHANGE
-	CHECK_CHANGE
+	REVIEW_CHANGE = iota
+	CHECK_FAILURE
 	NEW_COMMIT
+	ALL_CHECKS_SUCCESS
 )
 
-func Compare(prev, current *RepositoryView) ([]ChangeType, error) {
+func Compare(prev, current *RepositoryView) []ChangeType {
 	var changes []ChangeType
 
-	changelog, err := diff.Diff(prev, current, diff.TagName("json"), diff.DisableStructValues(), diff.SliceOrdering(false))
-	if err != nil {
-		return []ChangeType{NONE}, err
+	prevPR := prev.Repository.PullRequest
+	currentPR := current.Repository.PullRequest
+	prevCommit := prevPR.Commits.Nodes[0]
+	currentCommit := currentPR.Commits.Nodes[0]
+
+	// check if the commit changed
+	// if it did, that's the only change we should return since it changes everything
+	if prevCommit.Commit.AbbreviatedOID != currentCommit.Commit.AbbreviatedOID {
+		return []ChangeType{NEW_COMMIT}
 	}
 
-	fmt.Println("COMPARING")
-	// checkChanges := map[string]string{}
-	for _, c := range changelog {
-		fmt.Println(c.Path, c.From, c.To)
-
-		if len(c.Path) == 3 && c.Path[2] == "state" {
-			changes = append(changes, REPO_STATUS)
-			continue
-		}
-
-		// Change was to commit status
-		if len(c.Path) == 10 && c.Path[9] == "state" {
-			changes = append(changes, CHECK_CHANGE)
-			continue
-		}
-
-		// review change
-		if len(c.Path) == 6 && c.Path[2] == "reviews" {
+	// check if a review changed
+	pastReviewStates := map[string]string{}
+	for _, r := range prevPR.Reviews.Nodes {
+		pastReviewStates[r.Author.Login] = r.State
+	}
+	for _, r := range currentPR.Reviews.Nodes {
+		if _, ok := pastReviewStates[r.Author.Login]; !ok {
+			// this review is new
 			changes = append(changes, REVIEW_CHANGE)
-			continue
+		}
+	}
+
+	// check if a PR status check changed
+	pastStatusChecks := map[string]StatusState{}
+	for _, c := range prevCommit.Commit.Status.Contexts {
+		pastStatusChecks[c.ID] = c.State
+	}
+	unsuccessfullChecks := len(currentCommit.Commit.Status.Contexts)
+	checkChange := false
+	for _, c := range currentCommit.Commit.Status.Contexts {
+
+		// determine whether this check has changed
+		newStatus := false
+		if lastStatus, ok := pastStatusChecks[c.ID]; ok {
+			if lastStatus != c.State {
+				// this check had its state change, so that's new
+				newStatus = true
+			}
+		} else {
+			// this check was not seen before, so it's new
+			newStatus = true
 		}
 
-		// new commit
-		if len(c.Path) == 7 && c.Path[6] == "abbreviatedOid" {
-			// when we see a new commit, we ignore other changes
-			return []ChangeType{NEW_COMMIT}, nil
+		// later we need to know if any checks changed
+		checkChange = checkChange || newStatus
+
+		switch c.State {
+		case Success:
+			unsuccessfullChecks--
+		case Failure:
+			fallthrough
+		case Error:
+			// failures or errors are treated the same
+			if newStatus {
+				changes = append(changes, CHECK_FAILURE)
+			}
 		}
-
 	}
 
-	if len(changes) > 0 {
-		return changes, nil
+	// if all checks have passed
+	if checkChange && unsuccessfullChecks == 0 {
+		changes = append(changes, ALL_CHECKS_SUCCESS)
 	}
 
-	return []ChangeType{NONE}, nil
-}
-
-type cDiffer struct {
-	DiffFunc (func(path []string, a, b reflect.Value, p interface{}) error)
-}
-
-func (o *cDiffer) InsertParentDiffer(dfunc func(path []string, a, b reflect.Value, p interface{}) error) {
-	o.DiffFunc = dfunc
-}
-
-func (o *cDiffer) Match(a, b reflect.Value) bool {
-	return diff.AreType(a, b, reflect.TypeOf(CommitStatusContext{}))
-}
-func (o *cDiffer) Diff(cl *diff.Changelog, path []string, a, b reflect.Value) error {
-	if a.String() == b.String() {
-		cl.Add(diff.UPDATE, path, a.Interface(), b.Interface())
-	}
-	return nil
+	return changes
 }

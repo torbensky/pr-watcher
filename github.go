@@ -2,7 +2,6 @@ package prwatcher
 
 import (
 	"context"
-	"sort"
 	"time"
 
 	"github.com/machinebox/graphql"
@@ -38,9 +37,6 @@ func (gh GitHub) QueryPRStatus(ctx context.Context, owner, repo string, pr int) 
 		return nil, err
 	}
 
-	// sort to give more consistent data back
-	sort.Sort(CommitStatusByID(result.Repository.PullRequest.Commits.Nodes[0].Commit.Status.Contexts))
-
 	return &result, nil
 }
 
@@ -64,6 +60,7 @@ const prStateQuery = `query($owner: String!, $repo: String!, $pull_number: Int!)
 					abbreviatedOid
 					status {
 						contexts {
+							id
 							context
 							description
 							state
@@ -106,18 +103,19 @@ type ReviewNode struct {
 	} `json:"author"`
 }
 
+type StatusState string
+
+const (
+	Expected StatusState = "EXPECTED"
+	Error    StatusState = "ERROR"
+	Failure  StatusState = "FAILURE"
+	Pending  StatusState = "PENDING"
+	Success  StatusState = "SUCCESS"
+)
+
 type CommitStatusContext struct {
-	Context     string `json:"context"`
-	Description string `json:"description"`
-	State       string `json:"state"`
-	ID          string `json:"id"`
-}
-
-type CommitStatusByID []CommitStatusContext
-
-func (a CommitStatusByID) Len() int           { return len(a) }
-func (a CommitStatusByID) Less(i, j int) bool { return a[i].ID < a[j].ID }
-func (a CommitStatusByID) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
-func (a CommitStatusContext) String() string {
-	return a.State + a.ID
+	Context     string      `json:"context"`
+	Description string      `json:"description"`
+	State       StatusState `json:"state"`
+	ID          string      `json:"id"`
 }

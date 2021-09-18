@@ -2,18 +2,11 @@
     "repository": {
       "pullRequest": {
         "title": "just testing a thing",
-        "number": 1234,
         "state": "OPEN",
+        "number": 1234,
         "mergeable": "MERGEABLE",
         "reviews": {
-          "nodes": [
-            {
-              "state": "COMMENTED",
-              "author": {
-                "login": "joecommenter"
-              }
-            }
-          ]
+          "nodes": []
         },
         "commits": {
           "nodes": [
@@ -22,6 +15,30 @@
                 "abbreviatedOid": "2e1a0c0",
                 "status": {
                   "contexts": [
+                    {
+                      "context": "ci/qa",
+                      "description": "QA Test",
+                      "state": "FAILURE",
+                      "id": "ciqa"
+                    },
+                    {
+                      "context": "ci/tools/all",
+                      "description": "",
+                      "state": "FAILURE",
+                      "id": "citoolsall"
+                    },
+                    {
+                      "context": "ci/tools/lint",
+                      "description": "",
+                      "state": "FAILURE",
+                      "id": "citoolslint"
+                    },
+                    {
+                      "context": "ci/tools/test",
+                      "description": "",
+                      "state": "SUCCESS",
+                      "id": "citoolstest"
+                    },
                     {
                       "context": "ci/all",
                       "description": "",
@@ -47,28 +64,10 @@
                       "id": "citest"
                     },
                     {
-                      "context": "ci/tools/all",
-                      "description": "",
-                      "state": "SUCCESS",
-                      "id": "citoolsall"
-                    },
-                    {
                       "context": "ci/tools/build",
                       "description": "",
                       "state": "SUCCESS",
                       "id": "citoolsbuild"
-                    },
-                    {
-                      "context": "ci/tools/lint",
-                      "description": "",
-                      "state": "SUCCESS",
-                      "id": "citoolslint"
-                    },
-                    {
-                      "context": "ci/tools/test",
-                      "description": "",
-                      "state": "SUCCESS",
-                      "id": "citoolstest"
                     },
                     {
                       "context": "continuous-integration/jenkins/branch",

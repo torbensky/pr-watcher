@@ -32,17 +32,14 @@ func main() {
 			continue
 		}
 
-		changes, err := prwatcher.Compare(last, resp)
-		if err != nil {
-			log.Fatal(err)
-		}
+		changes := prwatcher.Compare(last, resp)
 		for _, c := range changes {
 			switch c {
 			case prwatcher.NEW_COMMIT:
 				prwatcher.Notify("New Commit", "A new commit has started")
 			case prwatcher.REVIEW_CHANGE:
 				prwatcher.Notify("PR Reviewed", "New review received")
-			case prwatcher.CHECK_CHANGE:
+			case prwatcher.CHECK_FAILURE:
 				prwatcher.Notify("PR Check", "PR check status updated")
 			}
 		}

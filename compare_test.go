@@ -14,34 +14,36 @@ import (
 
 func TestCompare(t *testing.T) {
 	t.Log("1->2")
-	result, err := prwatcher.Compare(loadJSON(t, "json/prStateQuery1.json"), loadJSON(t, "json/prStateQuery2.json"))
-	require.NoError(t, err)
-	assert.Equal(t, []prwatcher.ChangeType{prwatcher.NONE}, result)
+	result := prwatcher.Compare(loadJSON(t, "json/prStateQuery1.json"), loadJSON(t, "json/prStateQuery2.json"))
+	assert.Empty(t, result)
 
 	t.Log("2->3")
-	result, err = prwatcher.Compare(loadJSON(t, "json/prStateQuery2.json"), loadJSON(t, "json/prStateQuery3.json"))
-	require.NoError(t, err)
-	assert.Equal(t, []prwatcher.ChangeType{prwatcher.CHECK_CHANGE, prwatcher.CHECK_CHANGE, prwatcher.CHECK_CHANGE}, result)
+	result = prwatcher.Compare(loadJSON(t, "json/prStateQuery2.json"), loadJSON(t, "json/prStateQuery3.json"))
+	assert.Empty(t, result)
 
 	t.Log("3->4")
-	result, err = prwatcher.Compare(loadJSON(t, "json/prStateQuery3.json"), loadJSON(t, "json/prStateQuery4.json"))
-	require.NoError(t, err)
-	assert.Equal(t, []prwatcher.ChangeType{}, result)
+	result = prwatcher.Compare(loadJSON(t, "json/prStateQuery3.json"), loadJSON(t, "json/prStateQuery4.json"))
+	assert.ElementsMatch(t, []prwatcher.ChangeType{prwatcher.ALL_CHECKS_SUCCESS}, result)
 
 	t.Log("4->5")
-	result, err = prwatcher.Compare(loadJSON(t, "json/prStateQuery4.json"), loadJSON(t, "json/prStateQuery5.json"))
-	require.NoError(t, err)
-	assert.Equal(t, []prwatcher.ChangeType{prwatcher.REVIEW_CHANGE}, result)
+	result = prwatcher.Compare(loadJSON(t, "json/prStateQuery4.json"), loadJSON(t, "json/prStateQuery5.json"))
+	assert.ElementsMatch(t, []prwatcher.ChangeType{prwatcher.REVIEW_CHANGE}, result)
 
 	t.Log("5->6")
-	result, err = prwatcher.Compare(loadJSON(t, "json/prStateQuery5.json"), loadJSON(t, "json/prStateQuery6.json"))
-	require.NoError(t, err)
-	assert.Equal(t, []prwatcher.ChangeType{prwatcher.REVIEW_CHANGE}, result)
+	result = prwatcher.Compare(loadJSON(t, "json/prStateQuery5.json"), loadJSON(t, "json/prStateQuery6.json"))
+	assert.ElementsMatch(t, []prwatcher.ChangeType{prwatcher.REVIEW_CHANGE}, result)
 
 	t.Log("6->7")
-	result, err = prwatcher.Compare(loadJSON(t, "json/prStateQuery6.json"), loadJSON(t, "json/prStateQuery7.json"))
-	require.NoError(t, err)
-	assert.Equal(t, []prwatcher.ChangeType{prwatcher.NEW_COMMIT}, result)
+	result = prwatcher.Compare(loadJSON(t, "json/prStateQuery6.json"), loadJSON(t, "json/prStateQuery7.json"))
+	assert.ElementsMatch(t, []prwatcher.ChangeType{prwatcher.NEW_COMMIT}, result)
+
+	t.Log("failure 1->2")
+	result = prwatcher.Compare(loadJSON(t, "json/prStateQueryfail1.json"), loadJSON(t, "json/prStateQueryfail2.json"))
+	assert.ElementsMatch(t, []prwatcher.ChangeType{prwatcher.CHECK_FAILURE, prwatcher.CHECK_FAILURE, prwatcher.CHECK_FAILURE}, result)
+
+	t.Log("failure 2->3")
+	result = prwatcher.Compare(loadJSON(t, "json/prStateQueryfail2.json"), loadJSON(t, "json/prStateQueryfail3.json"))
+	assert.Empty(t, result)
 }
 
 func loadJSON(t *testing.T, path string) *prwatcher.RepositoryView {
