@@ -1,4 +1,4 @@
-package prwatcher
+package lib
 
 import (
 	"log"

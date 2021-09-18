@@ -1,4 +1,4 @@
-package prwatcher_test
+package lib_test
 
 import "testing"
 
