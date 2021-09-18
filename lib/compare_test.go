@@ -23,7 +23,7 @@ func TestCompare(t *testing.T) {
 
 	t.Log("3->4")
 	result = lib.Compare(loadJSON(t, "json/prStateQuery3.json"), loadJSON(t, "json/prStateQuery4.json"))
-	assert.ElementsMatch(t, []lib.Change{{lib.ALL_CHECKS_SUCCESS, "All status checks successfull. PR ready to go 🚀"}}, result)
+	assert.ElementsMatch(t, []lib.Change{{lib.ALL_CHECKS_SUCCESS, "All status checks successfull. Your PR is ready to go 🚀"}}, result)
 
 	t.Log("4->5")
 	result = lib.Compare(loadJSON(t, "json/prStateQuery4.json"), loadJSON(t, "json/prStateQuery5.json"))
@@ -35,7 +35,7 @@ func TestCompare(t *testing.T) {
 
 	t.Log("6->7")
 	result = lib.Compare(loadJSON(t, "json/prStateQuery6.json"), loadJSON(t, "json/prStateQuery7.json"))
-	assert.ElementsMatch(t, []lib.Change{{lib.NEW_COMMIT, ""}}, result)
+	assert.ElementsMatch(t, []lib.Change{{lib.NEW_COMMIT, "PR updated with a new commit 🏗️"}}, result)
 
 	t.Log("failure 1->2")
 	result = lib.Compare(loadJSON(t, "json/prStateQueryfail1.json"), loadJSON(t, "json/prStateQueryfail2.json"))

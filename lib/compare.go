@@ -34,7 +34,7 @@ func Compare(prev, current *RepositoryView) []Change {
 	// check if the commit changed
 	// if it did, that's the only change we should return since it changes everything
 	if prevCommit.Commit.AbbreviatedOID != currentCommit.Commit.AbbreviatedOID {
-		return []Change{{NEW_COMMIT, ""}}
+		return []Change{{NEW_COMMIT, "PR updated with a new commit 🏗️"}}
 	}
 
 	// check if a review changed
@@ -88,7 +88,7 @@ func Compare(prev, current *RepositoryView) []Change {
 
 	// if all checks have passed
 	if checkChange && unsuccessfullChecks == 0 {
-		changes = append(changes, Change{ALL_CHECKS_SUCCESS, "All status checks successfull. PR ready to go 🚀"})
+		changes = append(changes, Change{ALL_CHECKS_SUCCESS, "All status checks successfull. Your PR is ready to go 🚀"})
 	}
 
 	return changes

@@ -43,13 +43,15 @@ var rootCmd = &cobra.Command{
 
 			changes := lib.Compare(last, resp)
 			for _, c := range changes {
-				switch c {
+				switch c.Type {
 				case lib.NEW_COMMIT:
-					lib.Notify("New Commit", "A new commit has started")
+					lib.Notify("New Commit", c.Summary)
 				case lib.REVIEW_CHANGE:
-					lib.Notify("PR Reviewed", "New review received")
+					lib.Notify("PR Reviewed", c.Summary)
 				case lib.CHECK_FAILURE:
-					lib.Notify("PR Check", "PR check status updated")
+					lib.Notify("PR Check", c.Summary)
+				case lib.ALL_CHECKS_SUCCESS:
+					lib.Notify("PR Ready", c.Summary)
 				}
 			}
 			last = resp
