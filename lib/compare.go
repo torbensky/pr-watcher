@@ -1,5 +1,19 @@
 package lib
 
+import "fmt"
+
+// Describes a change to the PR
+type Change struct {
+	// A machine-readable change-type
+	Type ChangeType
+	// A human-readable summary of the change
+	Summary string
+}
+
+func (c Change) String() string {
+	return c.Summary
+}
+
 type ChangeType uint
 
 const (
@@ -9,8 +23,8 @@ const (
 	ALL_CHECKS_SUCCESS
 )
 
-func Compare(prev, current *RepositoryView) []ChangeType {
-	var changes []ChangeType
+func Compare(prev, current *RepositoryView) []Change {
+	var changes []Change
 
 	prevPR := prev.Repository.PullRequest
 	currentPR := current.Repository.PullRequest
@@ -20,7 +34,7 @@ func Compare(prev, current *RepositoryView) []ChangeType {
 	// check if the commit changed
 	// if it did, that's the only change we should return since it changes everything
 	if prevCommit.Commit.AbbreviatedOID != currentCommit.Commit.AbbreviatedOID {
-		return []ChangeType{NEW_COMMIT}
+		return []Change{{NEW_COMMIT, ""}}
 	}
 
 	// check if a review changed
@@ -31,7 +45,7 @@ func Compare(prev, current *RepositoryView) []ChangeType {
 	for _, r := range currentPR.Reviews.Nodes {
 		if _, ok := pastReviewStates[r.Author.Login]; !ok {
 			// this review is new
-			changes = append(changes, REVIEW_CHANGE)
+			changes = append(changes, Change{REVIEW_CHANGE, fmt.Sprintf("%s %s your PR", r.Author.Login, r.State)})
 		}
 	}
 
@@ -67,14 +81,14 @@ func Compare(prev, current *RepositoryView) []ChangeType {
 		case Error:
 			// failures or errors are treated the same
 			if newStatus {
-				changes = append(changes, CHECK_FAILURE)
+				changes = append(changes, Change{CHECK_FAILURE, fmt.Sprintf("%s %s 🔥", c.Context, c.State)})
 			}
 		}
 	}
 
 	// if all checks have passed
 	if checkChange && unsuccessfullChecks == 0 {
-		changes = append(changes, ALL_CHECKS_SUCCESS)
+		changes = append(changes, Change{ALL_CHECKS_SUCCESS, "All status checks successfull. PR ready to go 🚀"})
 	}
 
 	return changes
